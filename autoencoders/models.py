@@ -41,15 +41,16 @@ class Decoder(nn.Module):
         return self.decoder(x)
     
 class Autoencoder(nn.Module):
-    def __init__(self, encoder, decoder, noise):
+    def __init__(self, encoder, decoder, noise, norm=False):
         super(Autoencoder, self).__init__()
         self.noise = noise
         self.encoder = encoder
         self.decoder = decoder
-        self.norm = torch.nn.BatchNorm1d(1)
+        self.norm_fn = torch.nn.BatchNorm1d(1)
+        self.norm = norm
 
     def forward(self, x):
-        latent = self.norm(self.encoder(x))
+        latent = self.norm_fn(self.encoder(x)) if self.norm else self.encoder(x)
         latent += torch.normal(0, self.noise, size=latent.shape, device=latent.device)
         reconstructed = self.decoder(latent)
         return reconstructed

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-def train_autoencoder(model, epochs, criterion, data_generator, position_encoder, grid_size, encoder_optimizer, encoder_scheduler, decoder_optimizer, decoder_scheduler, device):
+def train_autoencoder(model, epochs, criterion, data_generator, position_encoder, encoder_optimizer, encoder_scheduler, decoder_optimizer, decoder_scheduler, device):
     lr_list = []
     loss_list = []
     
@@ -10,7 +10,7 @@ def train_autoencoder(model, epochs, criterion, data_generator, position_encoder
     for epoch in range(epochs):
         model.train()
 
-        raw_points = data_generator(grid_size, randomize=True).to(device)
+        raw_points = data_generator.get_points(epoch).to(device)
         train_data = position_encoder(raw_points).to(device)
         reconstructed_data = model(train_data)
         loss = criterion(reconstructed_data, raw_points)
@@ -30,7 +30,7 @@ def train_autoencoder(model, epochs, criterion, data_generator, position_encoder
         # Calculate loss separately with a new grid
         with torch.no_grad():
             model.eval()
-            raw_points = data_generator(grid_size, randomize=False).to(device)
+            raw_points = data_generator.get_val_points().to(device)
             test_data = position_encoder(raw_points).to(device)
             reconstructed_test_data = model(test_data)
             test_loss = nn.MSELoss()(reconstructed_test_data, raw_points)
