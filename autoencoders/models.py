@@ -54,3 +54,10 @@ class Autoencoder(nn.Module):
         latent += torch.normal(0, self.noise, size=latent.shape, device=latent.device)
         reconstructed = self.decoder(latent)
         return reconstructed
+
+    # wrote this but default init seems to work better lol
+    def init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='relu')
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)

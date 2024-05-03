@@ -1,9 +1,13 @@
 import torch
 import torch.nn as nn
 
-def train_autoencoder(model, epochs, criterion, data_generator, position_encoder, encoder_optimizer, encoder_scheduler, decoder_optimizer, decoder_scheduler, device):
+def train_autoencoder(model, epochs, criterion, data_generator, position_encoder, optimizers, schedulers, plot_curve, plot_freq, device):
+    encoder_optimizer, decoder_optimizer = optimizers
+    encoder_scheduler, decoder_scheduler = schedulers
+
     lr_list = []
     loss_list = []
+    curves = []
     
     model = model.to(device)
 
@@ -36,8 +40,12 @@ def train_autoencoder(model, epochs, criterion, data_generator, position_encoder
             test_loss = nn.MSELoss()(reconstructed_test_data, raw_points)
             loss_list.append(test_loss.item())
 
+            if (epoch + 1) % (plot_freq) == 0 or (epoch == epochs - 1):
+                curves.append(plot_curve(model))
+
         if (epoch + 1) % (epochs // 10) == 0:
             print(f"Epoch [{epoch+1}/{epochs}], Loss: {loss_list[-1]:.5f}")
 
-    return model, lr_list, loss_list
+
+    return model, lr_list, loss_list, curves
 
